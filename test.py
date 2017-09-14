@@ -20,7 +20,7 @@ class RedisOpt:
         print('delete ' + str(v))
 
 if __name__ == '__main__':
-    c = RedisOpt('127.0.0.1', 9527)
+    c = RedisOpt('127.0.0.1', 4002)
     c.set('a', 'b')
     c.get('a')
     c.delete('a')

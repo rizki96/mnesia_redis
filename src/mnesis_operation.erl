@@ -34,7 +34,7 @@ loop(State = #state{socket=Socket, transport=Transport}) ->
     receive
         {tcp, Socket, Data} ->
             {Num, Cmd, Param} = mnesis_parser:parse_data(Data),
-            io:format("Receive command from ~p: ~p ~p ~p~n", [State#state.peername, Cmd, Num, Param]),
+            %io:format("Receive command from ~p: ~p ~p ~p~n", [State#state.peername, Cmd, Num, Param]),
             {Reply, NewState} = do_operation(Cmd, Num, Param, State),
             Transport:send(Socket, Reply),
             Transport:setopts(Socket, [{active, once}]),
