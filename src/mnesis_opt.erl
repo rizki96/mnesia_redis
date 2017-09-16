@@ -19,6 +19,34 @@ leave_trans() ->
     put(delete, dirty_delete),
     put(all_keys, dirty_all_keys).
 
+-ifdef(use_ets).
+
+read(K) ->
+    F = get(read),
+    mnesia:ets(mnesia:F(K)).
+
+write(K = {Db, Key, _Value}) ->
+    mnesis_server:write_watch(Db,Key),
+    F = get(write),
+    mnesia:ets(mnesia:F(K));
+write(K) ->
+    F = get(write),
+    mnesia:ets(mnesia:F(K)).
+
+delete(K = {Db, Key}) ->
+    mnesis_server:write_watch(Db,Key),
+    F = get(delete),
+    mnesia:ets(mnesia:F(K));
+delete(K) ->
+    F = get(delete),
+    mnesia:ets(mnesia:F(K)).
+
+all_keys(K) ->
+    F = get(all_keys),
+    mnesia:ets(mnesia:F(K)).
+
+-else.
+
 read(K) ->
     F = get(read),
     mnesia:F(K).
@@ -42,3 +70,5 @@ delete(K) ->
 all_keys(K) ->
     F = get(all_keys),
     mnesia:F(K).
+
+-endif.
