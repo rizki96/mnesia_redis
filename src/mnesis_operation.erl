@@ -31,20 +31,21 @@ enter_loop(Socket, Peername, Transport) ->
     loop(#state{socket=Socket, peername=Peername, transport=Transport}).
 
 loop(State = #state{socket=Socket, transport=Transport}) ->
-    receive
-        {tcp, Socket, Data} ->
+    case Transport:recv(Socket, 0, 0) of
+        {ok, Data} ->
             {Num, Cmd, Param} = mnesis_parser:parse_data(Data),
             %io:format("Receive command from ~p: ~p ~p ~p ~p~n", [State#state.peername, State#state.database, Cmd, Num, Param]),
             {Reply, NewState} = do_operation(Cmd, Num, Param, State),
             Transport:send(Socket, Reply),
-            Transport:setopts(Socket, [{active, once}]),
+        	% Disable setopts for message passing, using blocking loop instead
+            %Transport:setopts(Socket, [{active, once}]),
             loop(NewState);
-        {tcp_closed, Socket} ->
-            ok = Transport:close(Socket);
+        {error, timeout} -> 
+            timer:sleep(20),
+            loop(#state{socket=Socket, transport=Transport});
         _ ->
             ok = Transport:close(Socket)
     end.
-
 
 %% do operation
 do_operation(Cmd, Num, Param, State=#state{database=Database}) ->

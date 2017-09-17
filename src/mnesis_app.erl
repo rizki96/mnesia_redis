@@ -42,7 +42,7 @@ start(_Type, _Args) ->
 		?MODULE,
 		Num,
 		ranch_tcp,
-		[{port, Port}],
+		[{port, Port}, {max_connections, infinity}],
 		mnesis_interface,
 		[]
 	),

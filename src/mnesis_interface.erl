@@ -11,6 +11,7 @@ start_link(Ref, Socket, Transport, Opts) ->
 
 -spec init(ranch:ref(), inet:socket(), module(), list()) -> ok.
 init(Ref, Socket, Transport, _Opts) ->
-    ok = Transport:setopts(Socket, [{active, once}]),
+	% Disable setopts for message passing, using blocking loop instead
+    %ok = Transport:setopts(Socket, [{active, once}]),
 	ok = ranch:accept_ack(Ref),
 	mnesis_operation:enter_loop(Socket, inet:peername(Socket), Transport).
