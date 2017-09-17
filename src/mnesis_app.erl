@@ -37,7 +37,10 @@ start(_Type, _Args) ->
 	],
 	mnesia_create(Tables),
 
-	% start lisener
+	% start listener embedded mode
+	%mnesis_interface_sup:start_link([Num, Port]),
+
+	% start listener
 	{ok, _} = ranch:start_listener(
 		?MODULE,
 		Num,
@@ -46,6 +49,7 @@ start(_Type, _Args) ->
 		mnesis_interface,
 		[]
 	),
+	%mnesis_interface_sup:start_link(),
 
 	% create cleaner
 	mnesis_sup:start_link([Tables, Period]).

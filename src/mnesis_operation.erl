@@ -7,6 +7,7 @@
 
 %% API
 -export([enter_loop/3]).
+-export([no_loop/2]).
 -export([multi/3, watch/3, unwatch/3, exec/3, discard/3]).
 -export([del/3, exists/3, keys/3, expire/3, ttl/3, persist/3]).
 -export([get/3, set/3, incr/3, incrby/3]).
@@ -30,23 +31,31 @@ enter_loop(Socket, Peername, Transport) ->
     mnesis_opt:init_mnesis(),
     loop(#state{socket=Socket, peername=Peername, transport=Transport}).
 
-loop(State = #state{socket=Socket, transport=Transport}) ->
+loop(State = #state{socket=Socket, peername=Peername, transport=Transport}) ->
     case Transport:recv(Socket, 0, 0) of
         {ok, Data} ->
             {Num, Cmd, Param} = mnesis_parser:parse_data(Data),
-            %io:format("Receive command from ~p: ~p ~p ~p ~p~n", [State#state.peername, State#state.database, Cmd, Num, Param]),
+            %io:format("Receive command from ~p: ~p ~p ~p ~p~n", [inet:peername(Socket), State#state.database, Cmd, Num, Param]),
             {Reply, NewState} = do_operation(Cmd, Num, Param, State),
+            %io:format("Reply: ~p~n", [Reply]),
             Transport:send(Socket, Reply),
-            % Disable setopts for message passing, using blocking loop instead
-            %Transport:setopts(Socket, [{active, once}]),
             loop(NewState);
         {error, timeout} -> 
             timer:sleep(20),
-            loop(#state{socket=Socket, transport=Transport});
+            loop(#state{socket=Socket, peername=Peername, transport=Transport});
         _ ->
             ok = Transport:close(Socket)
     end.
 
+no_loop(Data, State = #state{socket=Socket, transport=Transport}) ->
+    {Num, Cmd, Param} = mnesis_parser:parse_data(Data),
+    %io:format("Receive command from ~p: ~p ~p ~p ~p~n", [State#state.peername, State#state.database, Cmd, Num, Param]),
+    {Reply, NewState} = do_operation(Cmd, Num, Param, State),
+    %io:format("Reply: ~p~n", [Reply]),
+    Transport:send(Socket, Reply),
+    Transport:setopts(Socket, [{active, once}]),
+    {Reply, NewState}.
+    
 %% do operation
 do_operation(Cmd, Num, Param, State=#state{database=Database}) ->
     try
