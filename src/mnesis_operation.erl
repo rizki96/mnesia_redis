@@ -37,7 +37,7 @@ loop(State = #state{socket=Socket, transport=Transport}) ->
             %io:format("Receive command from ~p: ~p ~p ~p ~p~n", [State#state.peername, State#state.database, Cmd, Num, Param]),
             {Reply, NewState} = do_operation(Cmd, Num, Param, State),
             Transport:send(Socket, Reply),
-        	% Disable setopts for message passing, using blocking loop instead
+            % Disable setopts for message passing, using blocking loop instead
             %Transport:setopts(Socket, [{active, once}]),
             loop(NewState);
         {error, timeout} -> 
