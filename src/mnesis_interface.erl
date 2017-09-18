@@ -28,6 +28,7 @@
 }).
 
 start_link(Ref, Socket, Transport, Opts) ->
+	%Pid = proc_lib:start_link(?MODULE, init, [Ref, Socket, Transport, Opts]),
 	Pid = proc_lib:spawn_link(?MODULE, init, [Ref, Socket, Transport, Opts]),
 	{ok, Pid}.
 
@@ -35,6 +36,9 @@ init([]) -> {ok, undefined}.
 
 -spec init(ranch:ref(), inet:socket(), module(), list()) -> ok.
 init(Ref, Socket, Transport, _Opts) ->
+	% TODO: testing for embedded mode
+	%erlang:process_flag(trap_exit, true),
+	%ok = proc_lib:init_ack({ok, self()}),
 	ok = ranch:accept_ack(Ref),
 	% using gen_server
 	ok = Transport:setopts(Socket, [{active, once}]),

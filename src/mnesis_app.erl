@@ -49,7 +49,7 @@ start(_Type, _Args) ->
 		mnesis_interface,
 		[]
 	),
-	%mnesis_interface_sup:start_link(),
+	mnesis_interface_sup:start_link([]),
 
 	% create cleaner
 	mnesis_sup:start_link([Tables, Period]).
